@@ -8,7 +8,7 @@ on:
       - "py-api/app/**"
       - "py-api/docker/**"
       - "py-api/charts/**"
-      - "py-api/.github/workflows/build-and-update-dev.yml"
+      - "py-api/.github/workflows/build-push.yml"
 
 permissions:
   contents: write
