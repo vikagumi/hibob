@@ -69,7 +69,7 @@ jobs:
           ./scripts/set-digest.sh envs/dev/values.yaml "${{ steps.capture-digest.outputs.digest }}"
           echo "Updated envs/dev/values.yaml with digest ${{ steps.capture-digest.outputs.digest }}"
        
-       - name: Commit and push dev digest change
+      - name: Commit and push dev digest change
         working-directory: py-api
         run: |
           git config user.name "github-actions"
