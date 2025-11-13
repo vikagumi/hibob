@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: py-api-stage
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: stage
+  source:
+    repoURL: https://github.com/vikagumi/hibob.git
+    targetRevision: main
+    path: py-api/charts/py-api
+    helm:
+      valueFiles:
+        - ../../envs/stage/values.yaml
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
