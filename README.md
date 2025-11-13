@@ -174,26 +174,31 @@ This project includes built-in observability using Prometheus. The API exposes a
 
 ##  PromQL Queries Used
 
-### **1. 5xx Error Rate (raw query)**  
+### 1. Generate 10 intentional 500 errors 
+```console
+for i in {1..10}; do curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:8000/work?fail=true"; done
+```
+
+### 2. 5xx Error Rate (raw query)**  
 Calculates the rate of HTTP 5xx responses over the last 5 minutes:
 
 ```promql
 sum(rate(http_requests_total{status=~"5.."}[5m]))
 ```
-### **2. Total Request Rate (raw query)
+### 3. Total Request Rate (raw query)
 Calculates the rate of all HTTP requests over the last 5 minutes:
 ```promql
 sum(rate(http_requests_total[5m]))
 ```
 
-### **3. Error Ratio (recording rule)
+### 4. Error Ratio (recording rule)
 This ratio is used to determine overall error behavior. It divides 5xx request rate by the total request rate:
 ```promql
 sum(rate(http_requests_total{status=~"5.."}[5m]))
 /
 sum(rate(http_requests_total[5m]))
 ```
-### **4. Recorded Metric Name
+### 5. Recorded Metric Name
 Prometheus stores the final computed ratio under the following time-series name:
 ```promql
 py_api:http_error_rate:ratio
