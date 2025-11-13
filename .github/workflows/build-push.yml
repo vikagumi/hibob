@@ -8,6 +8,7 @@ on:
       - "py-api/app/**"
       - "py-api/docker/**"
       - "py-api/charts/**"
+      - "py-api/argocd/**"
       - ".github/workflows/build-push.yml"
 
 permissions:
