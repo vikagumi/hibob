@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ .Values.name }}-sm
+  name: {{ .Values.name }}-sm-{{ .Release.Namespace }}
   namespace: {{ .Values.monitoring.serviceMonitor.namespace }}
   labels:
     # These labels let Prometheus (kube-prometheus-stack) discover this monitor
