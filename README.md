@@ -1,10 +1,10 @@
-# 🚀 Python API — GitOps Workflow (Dev → Stage → Prod)
+# Python API — GitOps Workflow (Dev → Stage → Prod)
 
 This repository demonstrates a complete GitOps delivery pipeline for a Python API using FastAPI, Docker, Helm, Argo CD, Prometheus Operator, and GitHub Actions. The same image digest is promoted across all environments without rebuilding the image.
 
 ---
 
-## 📦 Running the API Locally
+## Running the API Locally
 
 The API can be started in a local Python environment. Dependencies are installed from a requirements file, and the application is launched using a local ASGI server. Automated tests validate the core functionality before any build or deployment happens.
 
@@ -32,7 +32,7 @@ These endpoints confirm functional behavior and metrics instrumentation before d
 
 ---
 
-## ☸️ Kubernetes Deployment with Kind
+## Kubernetes Deployment with Kind
 
 A local Kubernetes cluster is created using Kind.  
 Argo CD is installed into its own namespace and used to manage deployments for three environments:
@@ -57,7 +57,7 @@ kubectl apply -f .
 
 ---
 
-## 📁 Helm Chart Structure
+## Helm Chart Structure
 
 The repository contains one shared Helm chart used by all environments.  
 Each environment overrides only its specific settings through separate values files.
@@ -71,7 +71,14 @@ This structure ensures consistency while supporting configuration drift between 
 
 ---
 
-## 🔄 CI/CD Workflow Overview
+## CI/CD Workflow Overview
+### 🔐 Required GitHub Secrets
+
+| Secret Name         | Description |
+|---------------------|-------------|
+| **DOCKERHUB_USERNAME** | Your Docker Hub username. |
+| **DOCKERHUB_TOKEN**    | Docker Hub Access Token (created in Docker Hub → Security → Access Tokens). |
+| **PR_PAT**             | GitHub Personal Access Token with permissions: Contents (RW), Pull Requests (RW), Metadata (RO). |
 
 The GitHub Actions pipeline is split into three logical workflows:
 
@@ -101,7 +108,7 @@ This guarantees that development, staging, and production are all running the sa
 
 ---
 
-## 📊 Prometheus Observability
+## Prometheus Observability
 
 Prometheus Operator provides:
 - A ServiceMonitor to scrape application metrics  
@@ -113,7 +120,7 @@ The Prometheus UI shows targets for the currently deployed environment and refle
 
 ---
 
-## ✅ Acceptance Criteria
+## Acceptance Criteria
 
 This project meets all required acceptance checks:
 
@@ -141,7 +148,7 @@ kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:909
 To confirm that Prometheus is scraping the application for the currently active environment, open the Prometheus UI and check the scrape targets page. The application should appear as an active scrape target, and its status must be reported as "UP". This indicates that Prometheus is successfully reaching the `/metrics` endpoint exposed by the application.
 
 After verifying that the target is active, use the Prometheus query interface to search for metrics such as `http_requests_total` or `http_errors_total`. These metrics should appear with labels that match the environment (dev, stage, or prod), confirming that Prometheus has collected the data.
-### 3. The same image digest progresses from development to staging to production with no rebuilds.\
+### 3. The same image digest progresses from development to staging to production with no rebuilds.
 To confirm that the same image digest is used in dev → stage → prod without rebuilding, check that each environment’s values file contains the **exact same digest**. After merging the promotion PRs, the digest in staging and production must match the one originally written to development.
 
 Argo CD will also show this digest in each Application view. If all three environments display the same digest, the promotion flow is correct and no new image was built.  
@@ -159,4 +166,35 @@ To confirm that CI/CD works correctly:
 
 If both promotion PRs show the same digest and each merge updates the correct environment, the CI/CD workflow is functioning as required.
 
+## 📊 Prometheus Observability & PromQL Documentation
 
+This project includes built-in observability using Prometheus. The API exposes a `/metrics` endpoint with request counters and error counters, and Prometheus scrapes these metrics using a `ServiceMonitor`. This section documents the **exact PromQL** used for monitoring and alerting.
+
+---
+
+##  PromQL Queries Used
+
+### **1. 5xx Error Rate (raw query)**  
+Calculates the rate of HTTP 5xx responses over the last 5 minutes:
+
+```promql
+sum(rate(http_requests_total{status=~"5.."}[5m]))
+```
+### **2. Total Request Rate (raw query)
+Calculates the rate of all HTTP requests over the last 5 minutes:
+```promql
+sum(rate(http_requests_total[5m]))
+```
+
+### **3. Error Ratio (recording rule)
+This ratio is used to determine overall error behavior. It divides 5xx request rate by the total request rate:
+```promql
+sum(rate(http_requests_total{status=~"5.."}[5m]))
+/
+sum(rate(http_requests_total[5m]))
+```
+### **4. Recorded Metric Name
+Prometheus stores the final computed ratio under the following time-series name:
+```promql
+py_api:http_error_rate:ratio
+```
