@@ -21,6 +21,7 @@ jobs:
         with:
           fetch-depth: 0
 
+      # 1) Read digest from stage values.yaml and make a branch-safe version
       - name: Read digest from stage values.yaml
         working-directory: py-api
         id: read-stage-digest
@@ -28,20 +29,29 @@ jobs:
           DIGEST=$(grep -E 'digest:' envs/stage/values.yaml | head -n1 | sed -E 's/.*"(.*)".*/\1/')
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
+          SAFE="${DIGEST//:/-}"
+          echo "safe_digest=$SAFE" >> $GITHUB_OUTPUT
+
+          echo "Stage digest is: $DIGEST"
+          echo "Branch-safe digest is: $SAFE"
+
       - name: Make set-digest executable
         working-directory: py-api
         run: chmod +x scripts/set-digest.sh
 
+      # 2) Update prod values with the same digest as stage
       - name: Update prod values with digest
         working-directory: py-api
         run: |
           ./scripts/set-digest.sh envs/prod/values.yaml "${{ steps.read-stage-digest.outputs.digest }}"
+          echo "Updated envs/prod/values.yaml with digest ${{ steps.read-stage-digest.outputs.digest }}"
 
+      # 3) Open PR to promote stage digest to prod
       - name: Create promotion PR to prod
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "Promote digest ${{ steps.read-stage-digest.outputs.digest }} to prod"
-          branch: "promote-prod/${{ steps.read-stage-digest.outputs.digest }}"
+          branch: "promote-prod/${{ steps.read-stage-digest.outputs.safe_digest }}"
           title: "Promote ${{ steps.read-stage-digest.outputs.digest }} → prod"
           body: |
             This PR promotes image digest **${{ steps.read-stage-digest.outputs.digest }}** from stage to prod.

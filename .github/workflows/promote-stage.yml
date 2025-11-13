@@ -20,27 +20,41 @@ jobs:
         with:
           fetch-depth: 0
 
+      # 1) Read digest from dev values.yaml
       - name: Read digest from dev values.yaml
         working-directory: py-api
         id: read-dev-digest
         run: |
           DIGEST=$(grep -E 'digest:' envs/dev/values.yaml | head -n1 | sed -E 's/.*"(.*)".*/\1/')
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+          echo "Dev digest is: $DIGEST"
+
+      # 2) Make branch-safe digest (no ':' for branch name)
+      - name: Make branch-safe digest
+        id: sanitize-digest
+        run: |
+          RAW="${{ steps.read-dev-digest.outputs.digest }}"
+          SAFE="${RAW//:/-}"
+          echo "safe_digest=$SAFE" >> $GITHUB_OUTPUT
+          echo "Branch-safe digest is: $SAFE"
 
       - name: Make set-digest executable
         working-directory: py-api
         run: chmod +x scripts/set-digest.sh
 
+      # 3) Update stage values with same digest as dev
       - name: Update stage values with digest
         working-directory: py-api
         run: |
           ./scripts/set-digest.sh envs/stage/values.yaml "${{ steps.read-dev-digest.outputs.digest }}"
+          echo "Updated envs/stage/values.yaml with digest ${{ steps.read-dev-digest.outputs.digest }}"
 
+      # 4) Create PR to promote dev digest -> stage
       - name: Create promotion PR to stage
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "Promote digest ${{ steps.read-dev-digest.outputs.digest }} to stage"
-          branch: "promote-stage/${{ steps.read-dev-digest.outputs.digest }}"
+          branch: "promote-stage/${{ steps.sanitize-digest.outputs.safe_digest }}"
           title: "Promote ${{ steps.read-dev-digest.outputs.digest }} → stage"
           body: |
             This PR promotes image digest **${{ steps.read-dev-digest.outputs.digest }}** from dev to stage.
