@@ -24,17 +24,20 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
+        working-directory: py-api
         run: |
-          pip install -r py-api/app/requirements.txt
+          pip install -r app/requirements.txt
           pip install ruff
 
       - name: Lint
-        run: ruff check py-api/app
+        working-directory: py-api
+        run: ruff check app
 
       - name: Run tests
-        run: python -m pytest -q py-api/app/tests
+        working-directory: py-api
+        run: python -m pytest -q app/tests
 
-      # 2) Build & push image
+      # 2) Build & push image (context is py-api/, Dockerfile is docker/Dockerfile)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -48,10 +51,9 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: py-api
           file: py-api/docker/Dockerfile
           push: true
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/py-api:latest
           provenance: false
-
