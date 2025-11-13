@@ -1,0 +1,11 @@
+name: Build & Update Dev
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  packages: read

@@ -1,0 +1,22 @@
+image:
+  repository: docker.io/YOUR_DOCKERHUB_USERNAME/py-api
+  digest: "sha256:PLACEHOLDER"   # overridden by env values
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+labels:
+  app.kubernetes.io/name: py-api
+
+monitoring:
+  enabled: true
+  # These labels must match Prometheus's selector (from kube-prometheus-stack)
+  labels:
+    release: kube-prometheus-stack
+  scrapePath: /metrics
+  errorRateThreshold: 0.05      # 5%
