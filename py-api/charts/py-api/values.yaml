@@ -4,7 +4,7 @@ replicaCount: 1
 
 image:
   repository: docker.io/vikagumi/py-api
-  digest: ""          # CI / env values will override this
+  digest: ""
   pullPolicy: IfNotPresent
 
 service:

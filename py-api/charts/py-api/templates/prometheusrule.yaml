@@ -1,0 +1,31 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Values.name }}-rules
+  namespace: {{ .Values.monitoring.serviceMonitor.namespace }}
+  labels:
+    {{- range $k, $v := .Values.monitoring.serviceMonitor.additionalLabels }}
+    {{ $k }}: {{ $v | quote }}
+    {{- end }}
+spec:
+  groups:
+    - name: py-api.rules
+      rules:
+        # 1) Recording rule for error rate
+        - record: py_api:http_error_rate:ratio
+          expr: |
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+
+        # 2) Alert if error rate too high
+        - alert: HighErrorRate
+          expr: py_api:http_error_rate:ratio > {{ .Values.monitoring.errorRateThreshold }}
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "py-api high error rate"
+            description: "py-api 5xx error rate is above {{ .Values.monitoring.errorRateThreshold }} for 5 minutes."
+{{- end }}

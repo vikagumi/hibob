@@ -1,0 +1,23 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.name }}-sm
+  namespace: {{ .Values.monitoring.serviceMonitor.namespace }}
+  labels:
+    # These labels let Prometheus (kube-prometheus-stack) discover this monitor
+    {{- range $k, $v := .Values.monitoring.serviceMonitor.additionalLabels }}
+    {{ $k }}: {{ $v | quote }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}       # must match Service .metadata.labels.app
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}    # ex: dev, stage, prod
+  endpoints:
+    - interval: 15s                 # scrape every 15 seconds
+      port: http                    # must match Service .spec.ports[].name
+      path: /metrics                # endpoint in your app
+{{- end }}
