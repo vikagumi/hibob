@@ -15,6 +15,6 @@ monitoring:
   enabled: true
   serviceMonitor:
     namespace: monitoring
-    selectorLabels:
-      release: kube-prometheus-stack   # must match your Prometheus
+    additionalLabels:
+      Release: kube-prometheus-stack   # must match your Prometheus
   errorRateThreshold: 0.05
