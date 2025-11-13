@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "py-api/app/**"
+      - "py-api/docker/**"
+      - "py-api/charts/**"
+      - "py-api/.github/workflows/build-and-update-dev.yml"
 
 permissions:
   contents: write
