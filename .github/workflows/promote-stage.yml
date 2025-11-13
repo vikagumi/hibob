@@ -53,6 +53,7 @@ jobs:
       - name: Create promotion PR to stage
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.PR_PAT }}
           commit-message: "Promote digest ${{ steps.read-dev-digest.outputs.digest }} to stage"
           branch: "promote-stage/${{ steps.sanitize-digest.outputs.safe_digest }}"
           title: "Promote ${{ steps.read-dev-digest.outputs.digest }} → stage"

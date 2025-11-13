@@ -50,6 +50,7 @@ jobs:
       - name: Create promotion PR to prod
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.PR_PAT }}
           commit-message: "Promote digest ${{ steps.read-stage-digest.outputs.digest }} to prod"
           branch: "promote-prod/${{ steps.read-stage-digest.outputs.safe_digest }}"
           title: "Promote ${{ steps.read-stage-digest.outputs.digest }} → prod"
