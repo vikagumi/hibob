@@ -1,0 +1,6 @@
+name: py-api
+replicaCount: 1
+
+image:
+  repository: docker.io/vikagumi/py-api
+  digest: "sha256:FROM_CI_FOR_DEV"
