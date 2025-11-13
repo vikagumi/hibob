@@ -25,14 +25,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r app/requirements.txt
+          pip install -r py-api/app/requirements.txt
           pip install ruff
 
       - name: Lint
         run: ruff check app
 
       - name: Run tests
-        run: python -m pytest -q app/tests
+        run: python -m pytest -q py-api/app/tests
 
       # 2) Build & push image
       - name: Set up Docker Buildx
@@ -49,7 +49,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: docker/Dockerfile
+          file: py-api/docker/Dockerfile
           push: true
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/py-api:latest
