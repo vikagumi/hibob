@@ -3,4 +3,4 @@ replicaCount: 1
 
 image:
   repository: docker.io/vikagumi/py-api
-  digest: "sha256:9c00ca819178e805b606cdfc5b87bc8fb07dafde2dfdc4fb1b16b8bb169710a3"
+  digest: "sha256:e0f817debb931407a47239d70c57518a38fd4149358695044a596cd687dac0e7"
